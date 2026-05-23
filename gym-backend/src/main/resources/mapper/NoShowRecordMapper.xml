@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.mapper.NoShowRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.gym.entity.NoShowRecord">
+        <id column="id" property="id"/>
+        <result column="member_id" property="memberId"/>
+        <result column="order_id" property="orderId"/>
+        <result column="course_time" property="courseTime"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, member_id, order_id, course_time, created_at
+    </sql>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM no_show_record
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByMemberId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM no_show_record
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM no_show_record
+        WHERE order_id = #{orderId}
+    </select>
+
+    <insert id="insert" parameterType="com.gym.entity.NoShowRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO no_show_record (member_id, order_id, course_time)
+        VALUES (#{memberId}, #{orderId}, #{courseTime})
+    </insert>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM no_show_record WHERE id = #{id}
+    </delete>
+
+</mapper>
