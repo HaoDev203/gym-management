@@ -50,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResponse> listMemberOrders(Long memberId) {
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Order::getMemberId, memberId);
+        wrapper.eq(Order::getIsDeleted, 0);
         wrapper.orderByDesc(Order::getCreatedAt);
         List<Order> orders = orderMapper.selectList(wrapper);
         return orders.stream().map(this::toOrderResponse).collect(Collectors.toList());
@@ -148,7 +149,9 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
         }
-        orderMapper.deleteById(orderId);
+        order.setIsDeleted(1);
+        order.setUpdatedAt(LocalDateTime.now());
+        orderMapper.updateById(order);
     }
 
     private OrderResponse toOrderResponse(Order order) {

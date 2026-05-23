@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS coach (
 CREATE TABLE IF NOT EXISTS course (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '课程 ID',
     name VARCHAR(100) NOT NULL COMMENT '课程名称',
-    type TINYINT NOT NULL COMMENT '课程类型 1-团课 2-私教 3-体验课',
+    type TINYINT NOT NULL COMMENT '课程类型 0-私教课 1-团课',
     coach_id BIGINT NOT NULL COMMENT '教练 ID',
     start_time DATETIME NOT NULL COMMENT '开始时间',
     end_time DATETIME NOT NULL COMMENT '结束时间',

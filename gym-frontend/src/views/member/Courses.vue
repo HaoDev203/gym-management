@@ -58,7 +58,7 @@ const courseList = ref([])
 const filterTabs = [
   { label: '全部课程', value: '', icon: Grid },
   { label: '团课', value: 1, icon: User },
-  { label: '私教课', value: 2, icon: Star }
+  { label: '私教课', value: 0, icon: Star }
 ]
 
 const switchFilter = (value) => {

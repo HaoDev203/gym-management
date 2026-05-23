@@ -11,7 +11,7 @@
       <el-table-column prop="coachName" label="教练" />
       <el-table-column label="类型" width="100">
         <template #default="{ row }">
-          <el-tag :type="row.type === 1 ? 'success' : 'primary'">
+          <el-tag :type="row.type === 1 ? 'primary' : 'success'">
             {{ row.type === 1 ? '团课' : '私教课' }}
           </el-tag>
         </template>

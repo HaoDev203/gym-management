@@ -79,7 +79,18 @@
           >
             取消预约
           </el-button>
-          <span v-if="booking.status !== 2 && booking.status !== 3 && !canCheckIn(booking)" class="action-hint">
+          <el-button
+            v-if="booking.status !== 2"
+            type="info"
+            plain
+            size="small"
+            round
+            :loading="deletingId === booking.id"
+            @click="handleDelete(booking)"
+          >
+            删除
+          </el-button>
+          <span v-if="booking.status !== 2 && booking.status !== 3 && booking.status !== 4 && !canCheckIn(booking)" class="action-hint">
             {{ statusMap[booking.status] || '--' }}
           </span>
           <span v-if="booking.status === 3" class="action-hint">已取消</span>
@@ -92,9 +103,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { User, Clock, Timer, WarningFilled, CircleCloseFilled } from '@element-plus/icons-vue'
+import { User, Clock, Timer, WarningFilled, CircleCloseFilled, Delete } from '@element-plus/icons-vue'
 import { getMemberBookings, cancelBooking, checkInBooking } from '@/api/booking'
 import { getMemberById } from '@/api/member'
+import { deleteOrder } from '@/api/order'
 import { useUserStore } from '@/stores/user'
 import { formatDateTime, formatTimeOnly } from '@/utils/date'
 
@@ -102,6 +114,7 @@ const userStore = useUserStore()
 const loading = ref(false)
 const bookingList = ref([])
 const checkingInId = ref(null)
+const deletingId = ref(null)
 const memberInfo = ref(null)
 
 const activeCount = computed(() =>
@@ -200,6 +213,26 @@ const handleCancel = async (booking) => {
     else ElMessage.error(res.message || '取消失败')
   } catch (error) {
     if (error !== 'cancel') { ElMessage.error('取消预约失败') }
+  }
+}
+
+const handleDelete = async (booking) => {
+  try {
+    await ElMessageBox.confirm('确定要删除该预约记录吗？删除后无法恢复', '提示', {
+      confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
+    })
+    deletingId.value = booking.id
+    const res = await deleteOrder(booking.id)
+    if (res.code === 200) {
+      ElMessage.success('删除成功')
+      loadBookings()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') { ElMessage.error('删除失败') }
+  } finally {
+    deletingId.value = null
   }
 }
 

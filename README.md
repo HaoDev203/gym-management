@@ -55,44 +55,63 @@ gym-management-system/
     └── vite.config.js
 ```
 
-## 快速开始
-
-### 后端
-
-1. 创建数据库并执行初始化脚本
-```bash
-mysql -u root -p < src/main/resources/sql/init.sql
-```
-
-2. 修改配置文件 `src/main/resources/application-dev.yml` 中的数据库连接信息
-
-3. 启动应用
-```bash
-mvn spring-boot:run
-```
-
-4. 访问 API 文档：http://localhost:8080/api/doc.html
-
-### 前端
-
-1. 安装依赖
-```bash
-npm install
-```
-
-2. 启动开发服务器
-```bash
-npm run dev
-```
-
-3. 访问：http://localhost:3000
-
 ## 环境要求
 
 - JDK 17+
 - Node.js 18+
 - MySQL 8.0+
-- Redis 7.0+
+- Redis 7.0+（可选，无 Redis 时部分缓存功能降级）
+
+## 快速开始
+
+### 1. 初始化数据库
+
+**方式一：一键脚本（推荐）**
+
+```bash
+# Windows PowerShell
+cd gym-backend\src\main\resources\sql
+.\import.ps1
+
+# 或 CMD
+import.bat
+```
+
+脚本会自动：建库 → 建表 → 导入测试数据。
+
+如果你的 MySQL 密码不是 123，用记事本打开脚本修改顶部的 `$mysqlPass` 变量即可。
+
+**方式二：手动导入**
+
+用 Navicat 等工具依次执行 `schema.sql` 和 `data.sql`。
+
+> 数据库名固定为 `gym_management`，如需修改请同步改 `application-dev.yml`。
+
+### 2. 启动后端
+
+```bash
+cd gym-backend
+mvn spring-boot:run
+```
+
+启动后访问 Swagger 文档：http://localhost:8080/api/doc.html
+
+### 3. 启动前端
+
+```bash
+cd gym-frontend
+npm install
+npm run dev
+```
+
+浏览器打开：http://localhost:3000
+
+### 测试账户
+
+| 角色 | 账号 | 密码 |
+|------|------|------|
+| 管理员 | admin | admin123 |
+| 会员 | 13800138001 | 123456 |
 
 ## 开发规范
 

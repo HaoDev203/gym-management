@@ -36,4 +36,6 @@ public class CourseResponse {
     private Integer status;
 
     private LocalDateTime createdAt;
+
+    private Boolean isExpired;
 }

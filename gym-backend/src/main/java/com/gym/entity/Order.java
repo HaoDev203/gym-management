@@ -42,6 +42,8 @@ public class Order {
 
     private LocalDateTime updatedAt;
 
+    private Integer isDeleted;
+
     /**
      * 判断订单是否处于已预约状态。
      *

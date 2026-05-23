@@ -2,7 +2,7 @@
   <div class="course-card" @click="goDetail">
     <div class="card-cover" :class="coverClass">
       <div class="cover-overlay">
-        <el-tag :type="course.type === 1 ? 'success' : ''" effect="dark" round size="small">
+        <el-tag :type="course.type === 1 ? 'primary' : 'success'" effect="dark" round size="small">
           {{ course.type === 1 ? '团课' : '私教课' }}
         </el-tag>
         <el-tag v-if="course.status === 0" type="danger" effect="dark" round size="small">已取消</el-tag>
@@ -42,7 +42,10 @@
         </div>
       </div>
       <div v-if="showBookButton && course.status !== 0" class="card-actions">
-        <template v-if="hasBooked">
+        <template v-if="isExpired && course.type === 1">
+          <el-button type="info" disabled class="book-btn" round>已过期</el-button>
+        </template>
+        <template v-else-if="hasBooked">
           <el-button type="success" disabled class="book-btn" round>已预约</el-button>
         </template>
         <template v-else-if="inWaitlist">
@@ -97,8 +100,11 @@ const myPosition = ref(0)
 
 const isFull = computed(() => (props.course.bookedCount || 0) >= (props.course.capacity || 100))
 
+const isExpired = computed(() => props.course.isExpired === true)
+
 const coverClass = computed(() => {
   if (props.course.status === 0) return 'cover-disabled'
+  if (isExpired.value) return 'cover-expired'
   if (isFull.value) return 'cover-warning'
   return props.course.type === 1 ? 'cover-group' : 'cover-private'
 })
@@ -232,6 +238,10 @@ onMounted(() => { loadStatus() })
 
 .cover-private {
   background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+}
+
+.cover-expired {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
 }
 
 .cover-warning {

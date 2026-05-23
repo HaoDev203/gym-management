@@ -1,83 +1,70 @@
 # ========================================
-# 健身房管理系统 - 数据库导入脚本 (PowerShell)
+# 健身房管理系统 - 数据库一键导入 (PowerShell)
 # ========================================
-# 数据库配置：
-#   Host: 127.0.0.1
-#   Port: 3306
-#   Database: gym_management
-#   Username: root
-#   Password: 123
+# 如果 MySQL 配置不同，只需修改下面 4 个变量
+$mysqlHost   = "127.0.0.1"
+$mysqlPort   = "3306"
+$mysqlUser   = "root"
+$mysqlPass   = "123"
+$dbName      = "gym_management"
 # ========================================
 
+$ErrorActionPreference = "Stop"
+
 Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "  健身房管理系统 - 数据库导入脚本" -ForegroundColor Yellow
+Write-Host "  健身房管理系统 - 数据库导入" -ForegroundColor Yellow
 Write-Host "========================================`n" -ForegroundColor Cyan
 
 Write-Host "数据库配置：" -ForegroundColor White
-Write-Host "  Host: 127.0.0.1" -ForegroundColor Green
-Write-Host "  Port: 3306" -ForegroundColor Green
-Write-Host "  Database: gym_management" -ForegroundColor Green
-Write-Host "  Username: root" -ForegroundColor Green
-Write-Host "  Password: 123" -ForegroundColor Green
+Write-Host "  Host: $mysqlHost" -ForegroundColor Green
+Write-Host "  Port: $mysqlPort" -ForegroundColor Green
+Write-Host "  User: $mysqlUser" -ForegroundColor Green
+Write-Host "  Database: $dbName" -ForegroundColor Green
 Write-Host "`n========================================`n" -ForegroundColor Cyan
 
-# 检查 MySQL 命令是否可用
-try {
-    $mysqlPath = Get-Command mysql -ErrorAction Stop
-    Write-Host "[信息] 找到 MySQL 命令行工具：$($mysqlPath.Source)`n" -ForegroundColor Green
-} catch {
-    Write-Host "[错误] 未找到 MySQL 命令行工具" -ForegroundColor Red
-    Write-Host "`n请确保：" -ForegroundColor Yellow
-    Write-Host "  1. MySQL 已安装" -ForegroundColor White
-    Write-Host "  2. MySQL 已添加到系统 PATH 环境变量" -ForegroundColor White
-    Write-Host "  3. 或者使用 MySQL Workbench 手动导入 SQL 文件`n" -ForegroundColor White
-    pause
-    exit 1
+try { $null = Get-Command mysql -ErrorAction Stop }
+catch {
+    Write-Host "[X] 未找到 MySQL 命令行工具" -ForegroundColor Red
+    Write-Host "请将 MySQL bin 目录加入 PATH 环境变量" -ForegroundColor Yellow
+    pause; exit 1
 }
+Write-Host "[OK] MySQL 已就绪" -ForegroundColor Green
 
-Write-Host "[信息] 开始导入数据库..." -ForegroundColor Cyan
-Write-Host ""
-
-# 获取脚本所在目录
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sqlFile = Join-Path $scriptDir "test-data.sql"
+$schemaSql = Join-Path $scriptDir "schema.sql"
+$dataSql   = Join-Path $scriptDir "data.sql"
 
-# 检查 SQL 文件是否存在
-if (-not (Test-Path $sqlFile)) {
-    Write-Host "[错误] 找不到 SQL 文件：$sqlFile" -ForegroundColor Red
-    pause
-    exit 1
-}
+if (-not (Test-Path $schemaSql)) { Write-Host "[X] 缺少 schema.sql" -ForegroundColor Red; pause; exit 1 }
+if (-not (Test-Path $dataSql))   { Write-Host "[X] 缺少 data.sql"   -ForegroundColor Red; pause; exit 1 }
 
-Write-Host "[信息] SQL 文件：$sqlFile`n" -ForegroundColor Green
+$env:MYSQL_PWD = $mysqlPass
 
-# 执行 SQL 文件
-$env:MYSQL_PWD = "123"
-mysql -h 127.0.0.1 -P 3306 -u root < $sqlFile
+Write-Host "`n[1/3] 创建数据库..." -ForegroundColor Cyan
+mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser -e "CREATE DATABASE IF NOT EXISTS $dbName DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+if ($LASTEXITCODE -ne 0) { Write-Host "[X] 创建数据库失败" -ForegroundColor Red; pause; exit 1 }
+Write-Host "  [OK] 数据库 $dbName 已就绪" -ForegroundColor Green
 
-$exitCode = $LASTEXITCODE
+Write-Host "`n[2/3] 导入表结构（schema.sql）..." -ForegroundColor Cyan
+Get-Content $schemaSql | mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser $dbName
+if ($LASTEXITCODE -ne 0) { Write-Host "[X] 表结构导入失败" -ForegroundColor Red; pause; exit 1 }
+Write-Host "  [OK] 表结构创建完成" -ForegroundColor Green
 
-# 清除环境变量
+Write-Host "`n[3/3] 导入测试数据（data.sql）..." -ForegroundColor Cyan
+Get-Content $dataSql | mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser $dbName
+if ($LASTEXITCODE -ne 0) { Write-Host "[X] 测试数据导入失败" -ForegroundColor Red; pause; exit 1 }
+Write-Host "  [OK] 测试数据导入完成" -ForegroundColor Green
+
 Remove-Item Env:\MYSQL_PWD -ErrorAction SilentlyContinue
 
-if ($exitCode -eq 0) {
-    Write-Host "`n========================================" -ForegroundColor Green
-    Write-Host "  数据库导入成功！" -ForegroundColor Yellow
-    Write-Host "========================================`n" -ForegroundColor Green
-    
-    Write-Host "测试账户：" -ForegroundColor Cyan
-    Write-Host "  管理员：admin / admin123" -ForegroundColor White
-    Write-Host "  会员：member1 / m123456" -ForegroundColor White
-    Write-Host "  教练：coach1 / c123456`n" -ForegroundColor White
-} else {
-    Write-Host "`n========================================" -ForegroundColor Red
-    Write-Host "  数据库导入失败！" -ForegroundColor Yellow
-    Write-Host "========================================`n" -ForegroundColor Red
-    
-    Write-Host "请检查：" -ForegroundColor Cyan
-    Write-Host "  1. MySQL 服务是否启动" -ForegroundColor White
-    Write-Host "  2. 用户名密码是否正确" -ForegroundColor White
-    Write-Host "  3. 是否有足够的权限`n" -ForegroundColor White
-}
+Write-Host "`n========================================" -ForegroundColor Green
+Write-Host "  导入成功！" -ForegroundColor Yellow
+Write-Host "========================================`n" -ForegroundColor Green
+Write-Host "测试账户：" -ForegroundColor Cyan
+Write-Host "  管理员  admin      / admin123" -ForegroundColor White
+Write-Host "  会员    13800138001 / 123456" -ForegroundColor White
+Write-Host "`n其他会员账号均为手机号，密码 123456`n"
+
+$verifySql = "SELECT 'admin' tbl, COUNT(*) cnt FROM $dbName.admin UNION ALL SELECT 'member', COUNT(*) FROM $dbName.member UNION ALL SELECT 'coach', COUNT(*) FROM $dbName.coach UNION ALL SELECT 'course', COUNT(*) FROM $dbName.course;"
+mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser $dbName -e $verifySql
 
 pause

@@ -91,7 +91,7 @@ public class Course {
     }
 
     /**
-     * 判断是否已过预约截止时间（开课前30分钟）。
+     * 判断是否已过预约截止时间（开课前 30 分钟）。
      *
      * @return true 表示已截止
      */
@@ -100,6 +100,18 @@ public class Course {
             return true;
         }
         return LocalDateTime.now().plusMinutes(30).isAfter(this.startTime);
+    }
+
+    /**
+     * 判断课程是否已过期（结束时间已过）。
+     *
+     * @return true 表示已过期
+     */
+    public boolean isExpired() {
+        if (this.endTime == null) {
+            return false;
+        }
+        return LocalDateTime.now().isAfter(this.endTime);
     }
 
     /**

@@ -40,18 +40,26 @@ public class StatisticsServiceImpl implements StatisticsService {
         response.setActiveMembers(response.getTotalMembers());
 
         LambdaQueryWrapper<Order> allWrapper = new LambdaQueryWrapper<>();
+        allWrapper.in(Order::getStatus,
+                OrderStatus.PAID.getCode(), OrderStatus.COMPLETED.getCode());
         response.setTotalRevenue(calcRevenue(allWrapper));
 
         LambdaQueryWrapper<Order> todayWrapper = new LambdaQueryWrapper<>();
         todayWrapper.ge(Order::getCreatedAt, LocalDate.now().atStartOfDay());
+        todayWrapper.in(Order::getStatus,
+                OrderStatus.PAID.getCode(), OrderStatus.COMPLETED.getCode());
         response.setRevenueToday(calcRevenue(todayWrapper));
 
         LambdaQueryWrapper<Order> weekWrapper = new LambdaQueryWrapper<>();
         weekWrapper.ge(Order::getCreatedAt, LocalDate.now().minusDays(7).atStartOfDay());
+        weekWrapper.in(Order::getStatus,
+                OrderStatus.PAID.getCode(), OrderStatus.COMPLETED.getCode());
         response.setRevenueWeek(calcRevenue(weekWrapper));
 
         LambdaQueryWrapper<Order> monthWrapper = new LambdaQueryWrapper<>();
         monthWrapper.ge(Order::getCreatedAt, LocalDate.now().minusDays(30).atStartOfDay());
+        monthWrapper.in(Order::getStatus,
+                OrderStatus.PAID.getCode(), OrderStatus.COMPLETED.getCode());
         response.setRevenueMonth(calcRevenue(monthWrapper));
 
         LambdaQueryWrapper<Order> bookingWrapper = new LambdaQueryWrapper<>();
@@ -78,6 +86,8 @@ public class StatisticsServiceImpl implements StatisticsService {
             LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
             wrapper.ge(Order::getCreatedAt, dayStart);
             wrapper.lt(Order::getCreatedAt, dayEnd);
+            wrapper.in(Order::getStatus,
+                    OrderStatus.PAID.getCode(), OrderStatus.COMPLETED.getCode());
 
             DailyTrend dt = new DailyTrend();
             dt.setDate(date.toString());

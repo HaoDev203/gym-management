@@ -86,7 +86,8 @@ public class BookingServiceImpl implements BookingService {
             throw new BusinessException(ErrorCode.ORDER_TOO_EARLY);
         }
 
-        if (course.isCutoffPassed()) {
+        // 团课（type=1）需要检查截止时间，私教课（type=0）不过期
+        if (course.getType() == 1 && course.isCutoffPassed()) {
             throw new BusinessException(ErrorCode.ORDER_CUTOFF_PASSED);
         }
 

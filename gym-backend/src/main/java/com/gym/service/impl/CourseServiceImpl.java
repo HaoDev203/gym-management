@@ -189,6 +189,7 @@ public class CourseServiceImpl implements CourseService {
         response.setPrice(course.getPrice());
         response.setStatus(course.getStatus());
         response.setCreatedAt(course.getCreatedAt());
+        response.setIsExpired(course.isExpired());
         return response;
     }
 }
