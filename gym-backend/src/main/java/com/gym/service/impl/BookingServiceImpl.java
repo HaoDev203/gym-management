@@ -128,9 +128,12 @@ public class BookingServiceImpl implements BookingService {
         }
 
         Course course = courseMapper.selectById(order.getCourseId());
-        if (course != null && course.getStartTime() != null
-                && LocalDateTime.now().plusHours(2).isAfter(course.getStartTime())) {
-            throw new BusinessException(ErrorCode.ORDER_CANCEL_TOO_LATE);
+        if (course != null && course.getStartTime() != null) {
+            // 开课前 2 小时以上可以取消，不足 2 小时不允许取消
+            LocalDateTime cancelDeadline = course.getStartTime().minusHours(2);
+            if (LocalDateTime.now().isAfter(cancelDeadline)) {
+                throw new BusinessException(ErrorCode.ORDER_CANCEL_TOO_LATE, "开课前 2 小时内不可取消");
+            }
         }
 
         order.cancel();

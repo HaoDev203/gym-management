@@ -53,6 +53,12 @@ public class OrderController {
         return BaseResponse.success(null);
     }
 
+    @PutMapping("/admin-checkin/{id}")
+    public BaseResponse<Void> adminCheckIn(@PathVariable Long id) {
+        orderService.adminCheckIn(id);
+        return BaseResponse.success(null);
+    }
+
     @PutMapping("/cancel/{id}")
     public BaseResponse<Void> cancelOrder(@PathVariable Long id) {
         orderService.cancelOrder(id);
@@ -69,5 +75,17 @@ public class OrderController {
     public BaseResponse<Void> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
         return BaseResponse.success(null);
+    }
+
+    @PutMapping("/mark-paid/{id}")
+    public BaseResponse<OrderResponse> markAsPaid(@PathVariable Long id) {
+        OrderResponse order = orderService.markAsPaid(id);
+        return BaseResponse.success(order);
+    }
+
+    @PutMapping("/mark-unpaid/{id}")
+    public BaseResponse<OrderResponse> markAsUnpaid(@PathVariable Long id) {
+        OrderResponse order = orderService.markAsUnpaid(id);
+        return BaseResponse.success(order);
     }
 }

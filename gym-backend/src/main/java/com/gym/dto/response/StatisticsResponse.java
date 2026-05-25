@@ -33,4 +33,8 @@ public class StatisticsResponse {
     private List<CourseRank> topCourses;
 
     private Distribution distribution;
+
+    private List<MemberBookingFrequency> memberBookingFrequency;
+
+    private List<DailyLimitExceed> dailyLimitExceedStats;
 }

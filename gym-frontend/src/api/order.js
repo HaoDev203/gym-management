@@ -51,6 +51,16 @@ export function checkInOrder(id) {
 }
 
 /**
+ * 管理员签到
+ */
+export function adminCheckInOrder(id) {
+  return request({
+    url: `/api/order/admin-checkin/${id}`,
+    method: 'put'
+  })
+}
+
+/**
  * 标记爽约
  */
 export function markNoShow(id) {
@@ -67,5 +77,25 @@ export function deleteOrder(id) {
   return request({
     url: `/api/order/${id}`,
     method: 'delete'
+  })
+}
+
+/**
+ * 标记为已支付
+ */
+export function markAsPaid(id) {
+  return request({
+    url: `/api/order/mark-paid/${id}`,
+    method: 'put'
+  })
+}
+
+/**
+ * 标记为未支付
+ */
+export function markAsUnpaid(id) {
+  return request({
+    url: `/api/order/mark-unpaid/${id}`,
+    method: 'put'
   })
 }

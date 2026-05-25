@@ -1,12 +1,12 @@
 <template>
-  <div class="coaches-page" v-loading="loading">
+  <div class="coaches-page admin-page" v-loading="loading">
     <div class="page-header">
       <h2>教练管理</h2>
-      <el-button type="primary" @click="handleAdd">添加教练</el-button>
+      <el-button type="primary" @click="handleAdd" plain>添加教练</el-button>
     </div>
     
     <el-table :data="coachList" style="width: 100%">
-      <el-table-column prop="id" label="ID" width="80" />
+      <el-table-column type="index" label="序号" width="60" :index="indexMethod" />
       <el-table-column prop="name" label="姓名" />
       <el-table-column label="性别" width="80">
         <template #default="{ row }">
@@ -15,13 +15,28 @@
       </el-table-column>
       <el-table-column prop="phone" label="手机号" />
       <el-table-column prop="email" label="邮箱" />
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="160">
         <template #default="{ row }">
-          <el-button type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          <div class="action-buttons">
+            <el-button type="primary" size="small" @click="handleEdit(row)" plain>编辑</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(row)" plain>删除</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 分页 -->
+    <div v-if="total > 10" class="pagination-container" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <!-- 添加/编辑教练弹窗 -->
     <el-dialog
@@ -62,7 +77,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+        <el-button type="primary" :loading="submitting" @click="handleSubmit" plain>
           确定
         </el-button>
       </template>
@@ -76,11 +91,15 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getCoachList, createCoach, updateCoach, deleteCoach } from '@/api/admin'
 
 const loading = ref(false)
-const coachList = ref([])
-const dialogVisible = ref(false)
+const allCoaches = ref([])  // 保存所有教练数据
+const coachList = ref([])   // 当前页的教练数据
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 const submitting = ref(false)
 const isEdit = ref(false)
 const formRef = ref(null)
+const dialogVisible = ref(false)
 
 const coachForm = reactive({
   id: null,
@@ -112,7 +131,9 @@ const loadCoaches = async () => {
   try {
     const res = await getCoachList()
     if (res.code === 200) {
-      coachList.value = res.data || []
+      allCoaches.value = res.data || []
+      total.value = allCoaches.value.length
+      updateCoachList()
       await nextTick()
     }
   } catch (error) {
@@ -121,6 +142,27 @@ const loadCoaches = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const updateCoachList = () => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  coachList.value = allCoaches.value.slice(start, end)
+}
+
+const handleSizeChange = (val) => {
+  pageSize.value = val
+  currentPage.value = 1
+  updateCoachList()
+}
+
+const handleCurrentChange = (val) => {
+  currentPage.value = val
+  updateCoachList()
+}
+
+const indexMethod = (index) => {
+  return (currentPage.value - 1) * pageSize.value + index + 1
 }
 
 const handleAdd = () => {

@@ -203,6 +203,19 @@ const handleCheckIn = async (booking) => {
 }
 
 const handleCancel = async (booking) => {
+  // 先判断是否超过取消截止时间（开课前 2 小时）
+  if (booking.startTime) {
+    const courseStart = new Date(booking.startTime).getTime()
+    const now = Date.now()
+    const twoHours = 2 * 60 * 60 * 1000
+    const cancelDeadline = courseStart - twoHours
+    
+    if (now > cancelDeadline) {
+      ElMessage.warning('开课前 2 小时内不可取消，如需帮助请联系管理员')
+      return
+    }
+  }
+  
   try {
     await ElMessageBox.confirm('确定要取消该预约吗？', '提示', {
       confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'

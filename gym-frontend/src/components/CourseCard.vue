@@ -169,8 +169,9 @@ const loadStatus = async () => {
   try {
     const bookingsRes = await getMemberBookings(memberId)
     if (bookingsRes.code === 200) {
+      // status: 2-已预约，4-已完成（已签到）
       hasBooked.value = (bookingsRes.data || []).some(
-        b => b.courseId === props.course.id && b.status === 2
+        b => b.courseId === props.course.id && (b.status === 2 || b.status === 4)
       )
     }
   } catch {}

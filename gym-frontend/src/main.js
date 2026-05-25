@@ -8,6 +8,7 @@ import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import './styles/variables.css'
 import './styles/element-override.css'
 import './styles/global.css'
+import './styles/admin-buttons.css'
 
 import App from './App.vue'
 import router from './router'

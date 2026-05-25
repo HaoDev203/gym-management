@@ -71,6 +71,8 @@ public class StatisticsServiceImpl implements StatisticsService {
         response.setRevenueTrend(buildTrend(true));
         response.setTopCourses(buildTopCourses());
         response.setDistribution(buildDistribution());
+        response.setMemberBookingFrequency(buildMemberBookingFrequency());
+        response.setDailyLimitExceedStats(buildDailyLimitExceedStats());
 
         return response;
     }
@@ -135,7 +137,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         List<Course> courses = courseMapper.selectList(null);
         dist.setGroupClass(courses.stream().filter(c -> c.getType() != null && c.getType() == 1).count());
-        dist.setPrivateClass(courses.stream().filter(c -> c.getType() != null && c.getType() == 2).count());
+        dist.setPrivateClass(courses.stream().filter(c -> c.getType() != null && c.getType() == 0).count());
         dist.setActiveCourse(courses.stream().filter(c -> c.getStatus() != null && c.getStatus() == 1).count());
         dist.setCancelledCourse(courses.stream().filter(c -> c.getStatus() != null && c.getStatus() == 0).count());
 
@@ -151,5 +153,86 @@ public class StatisticsServiceImpl implements StatisticsService {
         return orders.stream()
                 .map(o -> o.getPaidAmount() != null ? o.getPaidAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private List<MemberBookingFrequency> buildMemberBookingFrequency() {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Order::getStatus, OrderStatus.PAID.getCode(), OrderStatus.COMPLETED.getCode());
+        List<Order> orders = orderMapper.selectList(wrapper);
+
+        System.out.println("buildMemberBookingFrequency - 总订单数：" + orders.size());
+
+        Map<Long, Long> countMap = orders.stream()
+                .collect(Collectors.groupingBy(Order::getMemberId, Collectors.counting()));
+
+        Map<Long, Long> todayCountMap = orders.stream()
+                .filter(o -> o.getCreatedAt().isAfter(LocalDate.now().atStartOfDay()))
+                .collect(Collectors.groupingBy(Order::getMemberId, Collectors.counting()));
+
+        Map<Long, Long> weekCountMap = orders.stream()
+                .filter(o -> o.getCreatedAt().isAfter(LocalDate.now().minusDays(7).atStartOfDay()))
+                .collect(Collectors.groupingBy(Order::getMemberId, Collectors.counting()));
+
+        Map<Long, Long> monthCountMap = orders.stream()
+                .filter(o -> o.getCreatedAt().isAfter(LocalDate.now().minusDays(30).atStartOfDay()))
+                .collect(Collectors.groupingBy(Order::getMemberId, Collectors.counting()));
+
+        System.out.println("buildMemberBookingFrequency - 会员数：" + countMap.size());
+
+        return countMap.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .limit(10)
+                .map(e -> {
+                    Long memberId = e.getKey();
+                    Member member = memberMapper.selectById(memberId);
+                    MemberBookingFrequency freq = new MemberBookingFrequency();
+                    freq.setMemberId(memberId);
+                    freq.setMemberName(member != null ? member.getName() : "未知");
+                    freq.setMemberPhone(member != null ? member.getPhone() : "未知");
+                    freq.setBookingCount(e.getValue());
+                    freq.setTodayCount(todayCountMap.getOrDefault(memberId, 0L));
+                    freq.setWeekCount(weekCountMap.getOrDefault(memberId, 0L));
+                    freq.setMonthCount(monthCountMap.getOrDefault(memberId, 0L));
+                    return freq;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<DailyLimitExceed> buildDailyLimitExceedStats() {
+        List<DailyLimitExceed> result = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        System.out.println("buildDailyLimitExceedStats - 开始统计");
+
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            LocalDateTime dayStart = date.atStartOfDay();
+            LocalDateTime dayEnd = date.plusDays(1).atStartOfDay();
+
+            LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+            wrapper.ge(Order::getCreatedAt, dayStart);
+            wrapper.lt(Order::getCreatedAt, dayEnd);
+            wrapper.in(Order::getStatus, OrderStatus.PAID.getCode(), OrderStatus.COMPLETED.getCode());
+
+            List<Order> orders = orderMapper.selectList(wrapper);
+            Map<Long, Long> memberCountMap = orders.stream()
+                    .collect(Collectors.groupingBy(Order::getMemberId, Collectors.counting()));
+
+            long exceedCount = memberCountMap.values().stream()
+                    .filter(count -> count >= 3)
+                    .count();
+
+            System.out.println("buildDailyLimitExceedStats - " + date + ": 订单数=" + orders.size() + ", 会员数=" + memberCountMap.size() + ", 超限数=" + exceedCount);
+
+            DailyLimitExceed exceed = new DailyLimitExceed();
+            exceed.setDate(date.toString());
+            exceed.setExceedCount(exceedCount);
+            exceed.setTotalMembers((long) memberCountMap.size());
+            exceed.setTotalBookings((long) orders.size());
+
+            result.add(exceed);
+        }
+
+        return result;
     }
 }

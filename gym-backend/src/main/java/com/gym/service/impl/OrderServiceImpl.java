@@ -104,9 +104,39 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ErrorCode.COURSE_NOT_FOUND);
         }
         LocalDateTime now = LocalDateTime.now();
-        if (course.getStartTime().isAfter(now.plusMinutes(30))
-                || course.getStartTime().plusHours(2).isBefore(now)) {
-            throw new BusinessException(ErrorCode.ORDER_CANNOT_CHECK_IN, "不在签到时间范围内");
+        LocalDateTime earliestCheckIn = course.getStartTime().minusMinutes(30);
+        LocalDateTime latestCheckIn = course.getStartTime().plusMinutes(30);
+        if (now.isBefore(earliestCheckIn) || now.isAfter(latestCheckIn)) {
+            throw new BusinessException(ErrorCode.ORDER_CANNOT_CHECK_IN, "不在签到时间范围内：开课前 30 分钟至开课后 30 分钟");
+        }
+
+        order.checkIn();
+        order.setStatus(OrderStatus.COMPLETED.getCode());
+        order.setUpdatedAt(LocalDateTime.now());
+        orderMapper.updateById(order);
+        return toOrderResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse adminCheckIn(Long orderId) {
+        Order order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        if (!order.canCheckIn()) {
+            throw new BusinessException(ErrorCode.ORDER_CANNOT_CHECK_IN);
+        }
+
+        Course course = courseMapper.selectById(order.getCourseId());
+        if (course == null || course.getStartTime() == null) {
+            throw new BusinessException(ErrorCode.COURSE_NOT_FOUND);
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime earliestCheckIn = course.getStartTime().minusMinutes(30);
+        LocalDateTime latestCheckIn = course.getEndTime().plusDays(1);
+        if (now.isBefore(earliestCheckIn) || now.isAfter(latestCheckIn)) {
+            throw new BusinessException(ErrorCode.ORDER_CANNOT_CHECK_IN, "不在签到时间范围内：开课前 30 分钟至课程结束后 1 天内");
         }
 
         order.checkIn();
@@ -152,6 +182,46 @@ public class OrderServiceImpl implements OrderService {
         order.setIsDeleted(1);
         order.setUpdatedAt(LocalDateTime.now());
         orderMapper.updateById(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse markAsPaid(Long orderId) {
+        Order order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        System.out.println("markAsPaid - 订单 ID: " + orderId + ", 当前状态：" + order.getStatus() + ", 金额：" + order.getAmount() + ", 已付：" + order.getPaidAmount());
+        // 只有已预约状态的订单才能标记为已支付
+        if (order.getStatus() != 2) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "只有已预约状态的订单才能修改支付状态");
+        }
+        order.setPaidAmount(order.getAmount());
+        order.setUpdatedAt(LocalDateTime.now());
+        System.out.println("markAsPaid - 更新后已付：" + order.getPaidAmount());
+        orderMapper.updateById(order);
+        System.out.println("markAsPaid - 数据库更新完成");
+        return toOrderResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse markAsUnpaid(Long orderId) {
+        Order order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        System.out.println("markAsUnpaid - 订单 ID: " + orderId + ", 当前状态：" + order.getStatus() + ", 金额：" + order.getAmount() + ", 已付：" + order.getPaidAmount());
+        // 只有已预约状态的订单才能标记为未支付
+        if (order.getStatus() != 2) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "只有已预约状态的订单才能修改支付状态");
+        }
+        order.setPaidAmount(java.math.BigDecimal.ZERO);
+        order.setUpdatedAt(LocalDateTime.now());
+        System.out.println("markAsUnpaid - 更新后已付：" + order.getPaidAmount());
+        orderMapper.updateById(order);
+        System.out.println("markAsUnpaid - 数据库更新完成");
+        return toOrderResponse(order);
     }
 
     private OrderResponse toOrderResponse(Order order) {

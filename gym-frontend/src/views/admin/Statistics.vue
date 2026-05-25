@@ -122,6 +122,42 @@
         </div>
       </div>
     </div>
+
+    <div class="charts-row">
+      <div class="chart-panel">
+        <h3>近 7 日每日预约上限触发统计</h3>
+        <div v-if="dailyLimitStats.length === 0" class="empty-hint">暂无数据</div>
+        <div v-else class="bar-chart">
+          <div v-for="(item, idx) in dailyLimitStats" :key="'d'+idx" class="bar-col">
+            <div class="bar-value">{{ item.exceedCount || 0 }}</div>
+            <div class="bar-track">
+              <div class="bar-fill bar-fill-red" :style="{ height: barHeight(item.exceedCount || 0, maxExceed) + '%' }"></div>
+            </div>
+            <span class="bar-label">{{ formatDateLabel(item.date) }}</span>
+          </div>
+        </div>
+        <div v-if="dailyLimitStats.length > 0" class="stat-hint">每日预约上限：3 次/人</div>
+      </div>
+      <div class="chart-panel">
+        <h3>会员预约频次 TOP10</h3>
+        <div v-if="memberFrequency.length === 0" class="empty-hint">暂无数据</div>
+        <div v-else class="rank-list">
+          <div v-for="(item, idx) in memberFrequency" :key="'mf'+idx" class="rank-item">
+            <span class="rank-num" :class="'rank-' + (idx + 1)">{{ idx + 1 }}</span>
+            <div class="rank-info">
+              <span class="rank-name">{{ item.memberName }}</span>
+              <span class="rank-phone">{{ item.memberPhone }}</span>
+            </div>
+            <div class="rank-stats">
+              <span class="rank-tag">今日 {{ item.todayCount }}</span>
+              <span class="rank-tag">本周 {{ item.weekCount }}</span>
+              <span class="rank-tag">本月 {{ item.monthCount }}</span>
+              <span class="rank-total">总计 {{ item.bookingCount }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -135,7 +171,8 @@ const stats = reactive({
   totalMembers: 0, totalCourses: 0, totalBookings: 0,
   totalRevenue: 0, activeMembers: 0, activeCourses: 0,
   revenueToday: 0, revenueWeek: 0, revenueMonth: 0,
-  bookingTrend: [], revenueTrend: [], topCourses: [], distribution: {}
+  bookingTrend: [], revenueTrend: [], topCourses: [], distribution: {},
+  memberBookingFrequency: [], dailyLimitExceedStats: []
 })
 
 const fmtPrice = (v) => {
@@ -153,6 +190,8 @@ const bookingTrend = computed(() => stats.bookingTrend || [])
 const revenueTrend = computed(() => stats.revenueTrend || [])
 const topCourses = computed(() => stats.topCourses || [])
 const dist = computed(() => stats.distribution || {})
+const memberFrequency = computed(() => stats.memberBookingFrequency || [])
+const dailyLimitStats = computed(() => stats.dailyLimitExceedStats || [])
 
 const maxBooking = computed(() => {
   const arr = bookingTrend.value.map(i => i.count || 0)
@@ -161,6 +200,11 @@ const maxBooking = computed(() => {
 
 const maxRevenue = computed(() => {
   const arr = revenueTrend.value.map(i => i.amount || 0)
+  return Math.max(1, ...arr)
+})
+
+const maxExceed = computed(() => {
+  const arr = dailyLimitStats.value.map(i => i.exceedCount || 0)
   return Math.max(1, ...arr)
 })
 
@@ -173,7 +217,12 @@ const loadStatistics = async () => {
   loading.value = true
   try {
     const res = await getStatistics()
-    if (res.code === 200) Object.assign(stats, res.data || {})
+    if (res.code === 200) {
+      console.log('统计数据:', res.data)
+      console.log('会员预约频次:', res.data.memberBookingFrequency)
+      console.log('每日上限触发:', res.data.dailyLimitExceedStats)
+      Object.assign(stats, res.data || {})
+    }
   } catch (error) {
     console.error('加载统计数据失败:', error)
   } finally {
@@ -341,6 +390,17 @@ onMounted(() => { loadStatistics() })
   background: linear-gradient(180deg, #34d399 0%, #059669 100%);
 }
 
+.bar-fill-red {
+  background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+}
+
+.stat-hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 .bar-label {
   font-size: 11px;
   color: var(--text-muted);
@@ -388,6 +448,34 @@ onMounted(() => { loadStatistics() })
 .rank-info {
   flex: 1;
   min-width: 0;
+}
+
+.rank-phone {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: block;
+}
+
+.rank-stats {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rank-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #e0e7ff;
+  color: #4338ca;
+  border-radius: 4px;
+}
+
+.rank-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: #059669;
+  margin-left: auto;
 }
 
 .rank-name {

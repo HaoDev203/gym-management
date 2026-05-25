@@ -1,0 +1,79 @@
+/* 管理员页面统一按钮样式 */
+
+/* 小按钮基础样式 */
+.admin-page .el-button--small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* 朴素按钮样式 - 蓝色（主要操作） */
+.admin-page .el-button--primary.is-plain {
+  background-color: #ecf5ff;
+  border-color: #b3d8ff;
+  color: #409eff;
+}
+
+.admin-page .el-button--primary.is-plain:hover {
+  background-color: #409eff;
+  border-color: #409eff;
+  color: #fff;
+}
+
+/* 朴素按钮样式 - 橙色（警告操作） */
+.admin-page .el-button--warning.is-plain {
+  background-color: #fdf6ec;
+  border-color: #faecd8;
+  color: #e6a23c;
+}
+
+.admin-page .el-button--warning.is-plain:hover {
+  background-color: #e6a23c;
+  border-color: #e6a23c;
+  color: #fff;
+}
+
+/* 朴素按钮样式 - 红色（危险操作） */
+.admin-page .el-button--danger.is-plain {
+  background-color: #fef0f0;
+  border-color: #fde2e2;
+  color: #f56c6c;
+}
+
+.admin-page .el-button--danger.is-plain:hover {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+  color: #fff;
+}
+
+/* 朴素按钮样式 - 绿色（成功操作） */
+.admin-page .el-button--success.is-plain {
+  background-color: #f0f9eb;
+  border-color: #e1f3d8;
+  color: #67c23a;
+}
+
+.admin-page .el-button--success.is-plain:hover {
+  background-color: #67c23a;
+  border-color: #67c23a;
+  color: #fff;
+}
+
+/* 朴素按钮样式 - 紫色（信息操作） */
+.admin-page .el-button--info.is-plain {
+  background-color: #f4f4f5;
+  border-color: #e9e9eb;
+  color: #909399;
+}
+
+.admin-page .el-button--info.is-plain:hover {
+  background-color: #909399;
+  border-color: #909399;
+  color: #fff;
+}
+
+/* 按钮组间距 */
+.admin-page .action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
