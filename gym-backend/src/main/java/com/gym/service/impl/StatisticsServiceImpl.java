@@ -7,6 +7,7 @@ import com.gym.enums.OrderStatus;
 import com.gym.mapper.*;
 import com.gym.service.StatisticsService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
 
@@ -160,7 +162,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         wrapper.in(Order::getStatus, OrderStatus.PAID.getCode(), OrderStatus.COMPLETED.getCode());
         List<Order> orders = orderMapper.selectList(wrapper);
 
-        System.out.println("buildMemberBookingFrequency - 总订单数：" + orders.size());
+        log.debug("buildMemberBookingFrequency - 总订单数：{}", orders.size());
 
         Map<Long, Long> countMap = orders.stream()
                 .collect(Collectors.groupingBy(Order::getMemberId, Collectors.counting()));
@@ -177,7 +179,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .filter(o -> o.getCreatedAt().isAfter(LocalDate.now().minusDays(30).atStartOfDay()))
                 .collect(Collectors.groupingBy(Order::getMemberId, Collectors.counting()));
 
-        System.out.println("buildMemberBookingFrequency - 会员数：" + countMap.size());
+        log.debug("buildMemberBookingFrequency - 会员数：{}", countMap.size());
 
         return countMap.entrySet().stream()
                 .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
@@ -202,7 +204,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         List<DailyLimitExceed> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        System.out.println("buildDailyLimitExceedStats - 开始统计");
+        log.debug("buildDailyLimitExceedStats - 开始统计");
 
         for (int i = 6; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
@@ -222,7 +224,8 @@ public class StatisticsServiceImpl implements StatisticsService {
                     .filter(count -> count >= 3)
                     .count();
 
-            System.out.println("buildDailyLimitExceedStats - " + date + ": 订单数=" + orders.size() + ", 会员数=" + memberCountMap.size() + ", 超限数=" + exceedCount);
+            log.debug("buildDailyLimitExceedStats - {}: 订单数={}, 会员数={}, 超限数={}", 
+                    date, orders.size(), memberCountMap.size(), exceedCount);
 
             DailyLimitExceed exceed = new DailyLimitExceed();
             exceed.setDate(date.toString());

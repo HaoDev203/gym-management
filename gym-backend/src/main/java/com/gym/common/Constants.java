@@ -11,10 +11,6 @@ public final class Constants {
     private Constants() {
     }
 
-    public static final String JWT_SECRET = "gym-management-system-secret-key-2026";
-
-    public static final long JWT_EXPIRATION = 86400000L;
-
     public static final int NO_SHOW_THRESHOLD = 3;
 
     public static final int BAN_DAYS = 7;

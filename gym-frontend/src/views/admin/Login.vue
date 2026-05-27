@@ -82,25 +82,15 @@ const handleLogin = async () => {
       loading.value = true
       try {
         const res = await adminLogin(loginForm)
-        console.log('管理员登录响应:', res)
         if (res.code === 200) {
           const token = res.data
-          console.log('管理员 token:', token)
-          // 存储管理员登录信息
           userStore.login(token, { role: 'ADMIN' })
-          console.log('登录后的 localStorage:', {
-            activeRole: localStorage.getItem('gym_active_role'),
-            adminToken: localStorage.getItem('gym_admin_token'),
-            memberToken: localStorage.getItem('gym_member_token')
-          })
           ElMessage.success('登录成功')
           router.push('/admin/dashboard')
         } else {
           ElMessage.error(res.message || '登录失败')
         }
       } catch (error) {
-        console.error('登录失败:', error)
-        console.error('错误详情:', error.response?.data)
         const errorMsg = error.response?.data?.message || error.message || '登录失败，请稍后重试'
         ElMessage.error(errorMsg)
       } finally {

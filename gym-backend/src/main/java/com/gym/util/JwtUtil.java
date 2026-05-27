@@ -1,9 +1,12 @@
 package com.gym.util;
 
-import com.gym.common.Constants;
+import com.gym.config.JwtConfig;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -15,10 +18,29 @@ import java.util.Date;
  * @author liuxinsi
  * @date 2026-05-21
  */
-public final class JwtUtil {
+@Slf4j
+@Component
+public class JwtUtil {
 
-    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(
-            Constants.JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+    private static JwtConfig jwtConfig;
+
+    @Autowired
+    public void setJwtConfig(JwtConfig jwtConfig) {
+        JwtUtil.jwtConfig = jwtConfig;
+    }
+
+    private static SecretKey getSecretKey() {
+        String secret = jwtConfig.getSecret();
+        if (secret == null || secret.isEmpty()) {
+            log.warn("JWT secret is not configured, using default secret");
+            secret = "gym-management-system-secret-key-2026";
+        }
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static long getExpiration() {
+        return jwtConfig.getExpiration() != null ? jwtConfig.getExpiration() : 86400000L;
+    }
 
     private JwtUtil() {
     }
@@ -32,14 +54,14 @@ public final class JwtUtil {
      */
     public static String generateToken(Long userId, String role) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + Constants.JWT_EXPIRATION);
+        Date expiration = new Date(now.getTime() + getExpiration());
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiration)
-                .signWith(SECRET_KEY)
+                .signWith(getSecretKey())
                 .compact();
     }
 
@@ -51,7 +73,7 @@ public final class JwtUtil {
      */
     public static Claims parseToken(String token) {
         return Jwts.parser()
-                .verifyWith(SECRET_KEY)
+                .verifyWith(getSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

@@ -10,6 +10,7 @@ import com.gym.mapper.*;
 import com.gym.service.OrderService;
 import com.gym.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
  * @author liuxinsi
  * @date 2026-05-21
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -191,16 +193,15 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
         }
-        System.out.println("markAsPaid - 订单 ID: " + orderId + ", 当前状态：" + order.getStatus() + ", 金额：" + order.getAmount() + ", 已付：" + order.getPaidAmount());
-        // 只有已预约状态的订单才能标记为已支付
+        log.debug("markAsPaid - 订单 ID: {}, 当前状态：{}, 金额：{}, 已付：{}", orderId, order.getStatus(), order.getAmount(), order.getPaidAmount());
         if (order.getStatus() != 2) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "只有已预约状态的订单才能修改支付状态");
         }
         order.setPaidAmount(order.getAmount());
         order.setUpdatedAt(LocalDateTime.now());
-        System.out.println("markAsPaid - 更新后已付：" + order.getPaidAmount());
+        log.debug("markAsPaid - 更新后已付：{}", order.getPaidAmount());
         orderMapper.updateById(order);
-        System.out.println("markAsPaid - 数据库更新完成");
+        log.debug("markAsPaid - 数据库更新完成");
         return toOrderResponse(order);
     }
 
@@ -211,16 +212,15 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
         }
-        System.out.println("markAsUnpaid - 订单 ID: " + orderId + ", 当前状态：" + order.getStatus() + ", 金额：" + order.getAmount() + ", 已付：" + order.getPaidAmount());
-        // 只有已预约状态的订单才能标记为未支付
+        log.debug("markAsUnpaid - 订单 ID: {}, 当前状态：{}, 金额：{}, 已付：{}", orderId, order.getStatus(), order.getAmount(), order.getPaidAmount());
         if (order.getStatus() != 2) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "只有已预约状态的订单才能修改支付状态");
         }
         order.setPaidAmount(java.math.BigDecimal.ZERO);
         order.setUpdatedAt(LocalDateTime.now());
-        System.out.println("markAsUnpaid - 更新后已付：" + order.getPaidAmount());
+        log.debug("markAsUnpaid - 更新后已付：{}", order.getPaidAmount());
         orderMapper.updateById(order);
-        System.out.println("markAsUnpaid - 数据库更新完成");
+        log.debug("markAsUnpaid - 数据库更新完成");
         return toOrderResponse(order);
     }
 

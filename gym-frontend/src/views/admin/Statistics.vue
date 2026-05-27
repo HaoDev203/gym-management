@@ -218,9 +218,6 @@ const loadStatistics = async () => {
   try {
     const res = await getStatistics()
     if (res.code === 200) {
-      console.log('统计数据:', res.data)
-      console.log('会员预约频次:', res.data.memberBookingFrequency)
-      console.log('每日上限触发:', res.data.dailyLimitExceedStats)
       Object.assign(stats, res.data || {})
     }
   } catch (error) {

@@ -306,9 +306,7 @@ const handleMarkAsPaid = async (order) => {
       type: 'warning'
     })
 
-    console.log('标记为已支付 - 订单 ID:', order.id)
     const res = await markAsPaid(order.id)
-    console.log('标记为已支付 - 响应:', res)
     if (res.code === 200) {
       ElMessage.success('已标记为已支付')
       loadOrders()
@@ -316,7 +314,6 @@ const handleMarkAsPaid = async (order) => {
       ElMessage.error(res.message || '操作失败')
     }
   } catch (error) {
-    console.error('标记为已支付 - 错误:', error)
     if (error !== 'cancel') {
       const msg = error.response?.data?.message || error.message || '操作失败'
       ElMessage.error(msg)
@@ -332,9 +329,7 @@ const handleMarkAsUnpaid = async (order) => {
       type: 'warning'
     })
 
-    console.log('标记为未支付 - 订单 ID:', order.id)
     const res = await markAsUnpaid(order.id)
-    console.log('标记为未支付 - 响应:', res)
     if (res.code === 200) {
       ElMessage.success('已标记为未支付')
       loadOrders()
@@ -342,7 +337,6 @@ const handleMarkAsUnpaid = async (order) => {
       ElMessage.error(res.message || '操作失败')
     }
   } catch (error) {
-    console.error('标记为未支付 - 错误:', error)
     if (error !== 'cancel') {
       const msg = error.response?.data?.message || error.message || '操作失败'
       ElMessage.error(msg)
