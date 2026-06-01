@@ -2,7 +2,7 @@
   <div class="coaches-page admin-page" v-loading="loading">
     <div class="page-header">
       <h2>教练管理</h2>
-      <el-button type="primary" @click="handleAdd" plain>添加教练</el-button>
+      <el-button type="primary" @click="handleAdd" plain v-if="userStore.user?.isAdmin">添加教练</el-button>
     </div>
     
     <el-table :data="coachList" style="width: 100%">
@@ -15,7 +15,7 @@
       </el-table-column>
       <el-table-column prop="phone" label="手机号" />
       <el-table-column prop="email" label="邮箱" />
-      <el-table-column label="操作" width="160">
+      <el-table-column label="操作" width="160" v-if="userStore.user?.isAdmin">
         <template #default="{ row }">
           <div class="action-buttons">
             <el-button type="primary" size="small" @click="handleEdit(row)" plain>编辑</el-button>
@@ -89,6 +89,9 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getCoachList, createCoach, updateCoach, deleteCoach } from '@/api/admin'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const loading = ref(false)
 const allCoaches = ref([])  // 保存所有教练数据

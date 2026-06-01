@@ -94,17 +94,20 @@ const handleLogin = async () => {
           const adminId = getUserIdFromToken(token)
 
           const adminInfo = await getCurrentAdmin(adminId)
-          const isSuperAdmin = adminInfo.data.role === 2
+          const adminRole = adminInfo.data.role
+          const isSuperAdmin = adminRole == 2
 
           const userInfo = {
             role: 'ADMIN',
             id: adminId,
             username: adminInfo.data.username,
             name: adminInfo.data.name,
+            adminRole,
             isAdmin: isSuperAdmin
           }
 
           userStore.login(token, userInfo)
+
           ElMessage.success(`欢迎回来，${isSuperAdmin ? '超级管理员' : '管理员'} ${userInfo.name}`)
           router.push('/admin/dashboard')
         } else {

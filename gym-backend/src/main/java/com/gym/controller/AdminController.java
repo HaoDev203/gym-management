@@ -53,7 +53,6 @@ public class AdminController {
      */
     @PostMapping("/add")
     public BaseResponse<Long> addAdmin(@RequestParam Long adminId, @RequestBody Admin admin) {
-        // 检查权限
         Admin currentAdmin = adminService.getAdminById(adminId);
         PermissionUtil.checkSuperAdmin(currentAdmin);
         
@@ -70,12 +69,10 @@ public class AdminController {
      */
     @PutMapping("/{id}")
     public BaseResponse<Void> updateAdmin(@RequestParam Long adminId, @PathVariable Long id, @RequestBody Admin admin) {
-        // 检查权限
         Admin currentAdmin = adminService.getAdminById(adminId);
         PermissionUtil.checkSuperAdmin(currentAdmin);
         
-        admin.setId(id);
-        adminService.createAdmin(admin);
+        adminService.updateAdmin(id, admin);
         return BaseResponse.success(null);
     }
 
@@ -87,7 +84,6 @@ public class AdminController {
      */
     @DeleteMapping("/{id}")
     public BaseResponse<Void> deleteAdmin(@RequestParam Long adminId, @PathVariable Long id) {
-        // 检查权限
         Admin currentAdmin = adminService.getAdminById(adminId);
         PermissionUtil.checkSuperAdmin(currentAdmin);
         

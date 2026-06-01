@@ -42,7 +42,7 @@
               未付
             </el-tag>
             <!-- 已预约状态且有金额的订单显示修改支付按钮 -->
-            <el-dropdown v-if="row.status === 2 && row.amount > 0" trigger="click" size="small">
+            <el-dropdown v-if="row.status === 2 && row.amount > 0 && userStore.user?.isAdmin" trigger="click" size="small">
               <el-button circle size="small" type="info" plain>
                 <el-icon><edit /></el-icon>
               </el-button>
@@ -78,7 +78,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="createdAt" label="创建时间" width="170" />
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="200" fixed="right" v-if="userStore.user?.isAdmin">
         <template #default="{ row }">
           <!-- 待支付状态：确认支付 -->
           <el-button
@@ -156,6 +156,9 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { User, Clock, Timer, WarningFilled, CircleCloseFilled, Delete, ArrowDown, CircleCheck, CircleClose, Edit } from '@element-plus/icons-vue'
 import { getAllOrders, confirmPayment, cancelOrder, checkInOrder, adminCheckInOrder, markNoShow, markAsPaid, markAsUnpaid } from '@/api/order'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const loading = ref(false)
 const allOrders = ref([])  // 保存所有订单数据

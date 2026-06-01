@@ -49,11 +49,11 @@
           <el-icon><Document /></el-icon>
           <span>订单管理</span>
         </el-menu-item>
-        <el-menu-item index="/admin/statistics">
+        <el-menu-item index="/admin/statistics" v-if="isSuperAdmin">
           <el-icon><DataLine /></el-icon>
           <span>数据统计</span>
         </el-menu-item>
-        <el-menu-item index="/admin/admins" v-if="userStore.user?.isAdmin">
+        <el-menu-item index="/admin/admins" v-if="isSuperAdmin">
           <el-icon><Lock /></el-icon>
           <span>管理员管理</span>
         </el-menu-item>
@@ -63,9 +63,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { getCurrentAdmin } from '@/api/admin'
 import {
   Grid,
   Calendar,
@@ -81,8 +82,26 @@ import {
 
 const route = useRoute()
 const userStore = useUserStore()
-
 const activeMenu = computed(() => route.path)
+
+const isSuperAdmin = ref(userStore.user?.isAdmin === true)
+
+onMounted(async () => {
+  if (userStore.user?.role === 'ADMIN' && userStore.user?.isAdmin === undefined) {
+    const id = userStore.user.id
+    if (id) {
+      try {
+        const res = await getCurrentAdmin(id)
+        const adminRole = res.data.role
+        const isAdmin = adminRole == 2
+        userStore.user = { ...userStore.user, adminRole, isAdmin }
+        isSuperAdmin.value = isAdmin
+      } catch (e) {
+        isSuperAdmin.value = false
+      }
+    }
+  }
+})
 </script>
 
 <style scoped>

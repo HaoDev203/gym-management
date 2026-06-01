@@ -20,7 +20,7 @@
           <el-tag v-else type="danger">禁用</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120">
+      <el-table-column label="操作" width="120" v-if="userStore.user?.isAdmin">
         <template #default="{ row }">
           <div class="action-buttons">
             <el-button
@@ -65,6 +65,9 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAllMembers, banMember, unbanMember } from '@/api/member'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const loading = ref(false)
 const allMembers = ref([])  // 保存所有会员数据

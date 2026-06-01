@@ -10,15 +10,26 @@
             <Bell />
           </el-icon>
         </el-badge>
-        <span class="username">{{ userStore.user?.name || '用户' }}</span>
-        <el-dropdown @command="handleCommand">
-          <span class="user-avatar">
-            <el-avatar :size="32" :icon="User" />
-          </span>
+        <el-dropdown @command="handleCommand" trigger="click">
+          <div class="user-trigger">
+            <el-avatar :size="32" :icon="User" class="user-avatar" />
+            <span class="username">{{ userStore.user?.username || '用户' }}</span>
+            <el-icon class="arrow-icon"><ArrowDown /></el-icon>
+          </div>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-              <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+              <div class="user-card">
+                <el-avatar :size="48" :icon="User" class="card-avatar" />
+                <div class="card-name">{{ userStore.user?.name || '用户' }}</div>
+                <div class="card-username">@{{ userStore.user?.username }}</div>
+                <div class="card-role">
+                  <el-tag v-if="userStore.user?.isAdmin" type="warning" size="small" effect="plain">超级管理员</el-tag>
+                  <el-tag v-else type="primary" size="small" effect="plain">普通管理员</el-tag>
+                </div>
+              </div>
+              <el-dropdown-item command="logout" divided>
+                <el-icon><SwitchButton /></el-icon>退出登录
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -31,7 +42,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { Bell, User } from '@element-plus/icons-vue'
+import { Bell, User, ArrowDown, SwitchButton } from '@element-plus/icons-vue'
 import { getUnreadCount } from '@/api/notification'
 
 defineProps({
@@ -53,8 +64,6 @@ const goToNotifications = () => {
 const handleCommand = (command) => {
   if (command === 'logout') {
     handleLogout()
-  } else if (command === 'profile') {
-    router.push('/member/profile')
   }
 }
 
@@ -149,16 +158,57 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.user-avatar {
+.user-trigger {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 2px;
-  border-radius: 50%;
-  transition: box-shadow var(--transition-fast);
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
 }
 
-.user-avatar:hover {
-  box-shadow: 0 0 0 3px var(--color-primary-bg);
+.user-trigger:hover {
+  background: var(--color-primary-bg);
+}
+
+.user-avatar {
+  flex-shrink: 0;
+}
+
+.arrow-icon {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.user-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 24px 12px;
+  min-width: 180px;
+}
+
+.card-avatar {
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-info));
+}
+
+.card-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.card-username {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.card-role {
+  margin-bottom: 4px;
 }
 </style>

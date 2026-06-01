@@ -14,6 +14,8 @@ public interface AdminService {
 
     Admin createAdmin(Admin admin);
 
+    Admin updateAdmin(Long id, Admin admin);
+
     Admin getAdminById(Long id);
 
     List<Admin> listAllAdmins();
