@@ -107,9 +107,9 @@ export function getAdminList() {
 /**
  * 创建管理员
  */
-export function createAdmin(data) {
+export function createAdmin(adminId, data) {
   return request({
-    url: '/api/admin/add',
+    url: `/api/admin/add?adminId=${adminId}`,
     method: 'post',
     data
   })
@@ -118,9 +118,9 @@ export function createAdmin(data) {
 /**
  * 更新管理员
  */
-export function updateAdmin(data) {
+export function updateAdmin(adminId, data) {
   return request({
-    url: `/api/admin/${data.id}`,
+    url: `/api/admin/${data.id}?adminId=${adminId}`,
     method: 'put',
     data
   })
@@ -129,9 +129,9 @@ export function updateAdmin(data) {
 /**
  * 删除管理员
  */
-export function deleteAdmin(id) {
+export function deleteAdmin(adminId, id) {
   return request({
-    url: `/api/admin/${id}`,
+    url: `/api/admin/${id}?adminId=${adminId}`,
     method: 'delete'
   })
 }
@@ -144,5 +144,15 @@ export function adminLogin(data) {
     url: '/api/auth/admin/login',
     method: 'post',
     data
+  })
+}
+
+/**
+ * 获取当前管理员信息
+ */
+export function getCurrentAdmin(adminId) {
+  return request({
+    url: `/api/admin/info?adminId=${adminId}`,
+    method: 'get'
   })
 }

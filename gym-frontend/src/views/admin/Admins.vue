@@ -2,7 +2,15 @@
   <div class="admins-page admin-page" v-loading="loading">
     <div class="page-header">
       <h2>管理员管理</h2>
-      <el-button type="primary" @click="handleAdd" plain>添加管理员</el-button>
+      <el-button type="primary" @click="handleAdd" plain v-if="userStore.user?.isAdmin">添加管理员</el-button>
+      <el-alert 
+        v-else 
+        title="权限提示" 
+        description="普通管理员无权限操作管理员管理功能" 
+        type="warning" 
+        :closable="false"
+        style="width: auto;"
+      />
     </div>
     
     <el-table :data="adminList" style="width: 100%">
@@ -11,17 +19,11 @@
       <el-table-column prop="name" label="姓名" />
       <el-table-column label="角色" width="120">
         <template #default="{ row }">
-          <el-tag v-if="row.isAdmin" type="danger">超级管理员</el-tag>
+          <el-tag v-if="row.role === 2" type="danger">超级管理员</el-tag>
           <el-tag v-else type="primary">普通管理员</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="100">
-        <template #default="{ row }">
-          <el-tag v-if="row.status === 0" type="danger">禁用</el-tag>
-          <el-tag v-else type="success">正常</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="160">
+      <el-table-column label="操作" width="160" v-if="userStore.user?.isAdmin">
         <template #default="{ row }">
           <div class="action-buttons">
             <el-button type="primary" size="small" @click="handleEdit(row)" plain>编辑</el-button>
@@ -50,7 +52,9 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAdminList, deleteAdmin } from '@/api/admin'
+import { useUserStore } from '@/stores/user'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const allAdmins = ref([])  // 保存所有管理员数据
 const adminList = ref([])  // 当前页的管理员数据
@@ -112,7 +116,8 @@ const handleDelete = async (admin) => {
       type: 'warning'
     })
     
-    const res = await deleteAdmin(admin.id)
+    const adminId = userStore.userId
+    const res = await deleteAdmin(adminId, admin.id)
     if (res.code === 200) {
       ElMessage.success('删除成功')
       loadAdmins()

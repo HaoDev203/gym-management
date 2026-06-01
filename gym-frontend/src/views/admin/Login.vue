@@ -51,7 +51,8 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { adminLogin } from '@/api/auth'
+import { adminLogin } from '@/api/admin'
+import { getCurrentAdmin } from '@/api/admin'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
@@ -86,12 +87,29 @@ const handleLogin = async () => {
         if (res.code === 200) {
           const token = res.data
           console.log('管理员 token:', token)
-          // 存储管理员登录信息
-          userStore.login(token, { role: 'ADMIN' })
+          
+          // 从 token 中解析管理员 ID
+          const adminId = parseInt(localStorage.getItem('gym_admin_id'))
+          
+          // 获取管理员详细信息
+          const adminInfo = await getCurrentAdmin(adminId)
+          console.log('管理员详细信息:', adminInfo)
+          
+          // 存储管理员信息（包含角色信息）
+          const userInfo = {
+            role: 'ADMIN',
+            id: adminId,
+            username: adminInfo.data.username,
+            name: adminInfo.data.name,
+            isAdmin: adminInfo.data.role === 2 // role=2 为超级管理员
+          }
+          
+          userStore.login(token, userInfo)
           console.log('登录后的 localStorage:', {
             activeRole: localStorage.getItem('gym_active_role'),
             adminToken: localStorage.getItem('gym_admin_token'),
-            memberToken: localStorage.getItem('gym_member_token')
+            memberToken: localStorage.getItem('gym_member_token'),
+            adminUser: localStorage.getItem('gym_admin_user')
           })
           ElMessage.success('登录成功')
           router.push('/admin/dashboard')
