@@ -53,6 +53,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminLogin } from '@/api/admin'
 import { getCurrentAdmin } from '@/api/admin'
+import { getUserIdFromToken } from '@/utils/jwt'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
@@ -83,42 +84,30 @@ const handleLogin = async () => {
       loading.value = true
       try {
         const res = await adminLogin(loginForm)
-        console.log('管理员登录响应:', res)
         if (res.code === 200) {
           const token = res.data
-          console.log('管理员 token:', token)
-          
-          // 从 token 中解析管理员 ID
-          const adminId = parseInt(localStorage.getItem('gym_admin_id'))
-          
-          // 获取管理员详细信息
+
+          const adminId = getUserIdFromToken(token)
+
           const adminInfo = await getCurrentAdmin(adminId)
-          console.log('管理员详细信息:', adminInfo)
-          
-          // 存储管理员信息（包含角色信息）
+          const isSuperAdmin = adminInfo.data.role === 2
+
           const userInfo = {
             role: 'ADMIN',
             id: adminId,
             username: adminInfo.data.username,
             name: adminInfo.data.name,
-            isAdmin: adminInfo.data.role === 2 // role=2 为超级管理员
+            isAdmin: isSuperAdmin
           }
-          
+
           userStore.login(token, userInfo)
-          console.log('登录后的 localStorage:', {
-            activeRole: localStorage.getItem('gym_active_role'),
-            adminToken: localStorage.getItem('gym_admin_token'),
-            memberToken: localStorage.getItem('gym_member_token'),
-            adminUser: localStorage.getItem('gym_admin_user')
-          })
-          ElMessage.success('登录成功')
+          ElMessage.success(`欢迎回来，${isSuperAdmin ? '超级管理员' : '管理员'} ${userInfo.name}`)
           router.push('/admin/dashboard')
         } else {
           ElMessage.error(res.message || '登录失败')
         }
       } catch (error) {
         console.error('登录失败:', error)
-        console.error('错误详情:', error.response?.data)
         const errorMsg = error.response?.data?.message || error.message || '登录失败，请稍后重试'
         ElMessage.error(errorMsg)
       } finally {
