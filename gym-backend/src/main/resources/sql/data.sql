@@ -4,8 +4,8 @@
 -- 插入管理员数据
 -- 密码：admin123（BCrypt 加密）
 INSERT INTO admin (id, username, password, name, role) VALUES
-(1, 'admin', '$2a$10$BNeEJy.qieZcLnVknQ.dxenRLpnSPghJtTT2gfBpW.ma5lyG2ClpO', '超级管理员', 1),
-(2, 'operator', '$2a$10$BNeEJy.qieZcLnVknQ.dxenRLpnSPghJtTT2gfBpW.ma5lyG2ClpO', '操作员', 2);
+(1, 'admin', '$2a$10$BNeEJy.qieZcLnVknQ.dxenRLpnSPghJtTT2gfBpW.ma5lyG2ClpO', '超级管理员', 2),
+(2, 'operator', '$2a$10$BNeEJy.qieZcLnVknQ.dxenRLpnSPghJtTT2gfBpW.ma5lyG2ClpO', '操作员', 1);
 
 -- 插入教练数据
 INSERT INTO coach (id, name, gender, phone, email, expertise, schedule) VALUES
