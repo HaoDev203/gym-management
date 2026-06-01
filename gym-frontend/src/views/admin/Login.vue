@@ -83,9 +83,13 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       try {
+        clearOldAdminData()
+
         const res = await adminLogin(loginForm)
         if (res.code === 200) {
           const token = res.data
+
+          localStorage.setItem('gym_admin_token', token)
 
           const adminId = getUserIdFromToken(token)
 
@@ -115,6 +119,13 @@ const handleLogin = async () => {
       }
     }
   })
+}
+
+function clearOldAdminData() {
+  localStorage.removeItem('gym_admin_token')
+  localStorage.removeItem('gym_admin_user')
+  localStorage.removeItem('gym_admin_id')
+  localStorage.removeItem('gym_active_role')
 }
 </script>
 
