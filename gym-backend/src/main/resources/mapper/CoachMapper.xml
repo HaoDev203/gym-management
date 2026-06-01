@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.mapper.CoachMapper">
+
+    <resultMap id="BaseResultMap" type="com.gym.entity.Coach">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="gender" property="gender"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="expertise" property="expertise"/>
+        <result column="schedule" property="schedule"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, gender, phone, email, expertise, schedule, created_at, updated_at
+    </sql>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM coach
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM coach
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.gym.entity.Coach" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO coach (name, gender, phone, email, expertise, schedule)
+        VALUES (#{name}, #{gender}, #{phone}, #{email}, #{expertise}, #{schedule})
+    </insert>
+
+    <update id="update" parameterType="com.gym.entity.Coach">
+        UPDATE coach
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="expertise != null">expertise = #{expertise},</if>
+            <if test="schedule != null">schedule = #{schedule},</if>
+            updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM coach WHERE id = #{id}
+    </delete>
+
+</mapper>

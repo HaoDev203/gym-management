@@ -1,0 +1,23 @@
+# Java 编译文件
+target/
+*.class
+*.jar
+
+# Node.js
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 日志
+*.log
+
+# H2 本地数据库文件
+data/
+
+# 系统文件
+.DS_Store
+Thumbs.db

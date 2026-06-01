@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.mapper.MemberMapper">
+
+    <resultMap id="BaseResultMap" type="com.gym.entity.Member">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="age" property="age"/>
+        <result column="id_card" property="idCard"/>
+        <result column="gender" property="gender"/>
+        <result column="birthday" property="birthday"/>
+        <result column="emergency_contact" property="emergencyContact"/>
+        <result column="emergency_phone" property="emergencyPhone"/>
+        <result column="no_show_count" property="noShowCount"/>
+        <result column="is_banned" property="isBanned"/>
+        <result column="banned_until" property="bannedUntil"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, username, password, name, phone, email, age, id_card, gender, birthday, 
+        emergency_contact, emergency_phone, no_show_count, is_banned, banned_until, 
+        created_at, updated_at
+    </sql>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM member
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM member
+        WHERE username = #{username}
+    </select>
+
+    <select id="selectByPhone" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM member
+        WHERE phone = #{phone}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM member
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.gym.entity.Member" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO member (username, password, name, phone, email, age, id_card, gender, birthday, 
+                           emergency_contact, emergency_phone, no_show_count, is_banned, banned_until)
+        VALUES (#{username}, #{password}, #{name}, #{phone}, #{email}, #{age}, #{idCard}, #{gender}, #{birthday}, 
+                #{emergencyContact}, #{emergencyPhone}, #{noShowCount}, #{isBanned}, #{bannedUntil})
+    </insert>
+
+    <update id="update" parameterType="com.gym.entity.Member">
+        UPDATE member
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="idCard != null">id_card = #{idCard},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="emergencyContact != null">emergency_contact = #{emergencyContact},</if>
+            <if test="emergencyPhone != null">emergency_phone = #{emergencyPhone},</if>
+            <if test="noShowCount != null">no_show_count = #{noShowCount},</if>
+            <if test="isBanned != null">is_banned = #{isBanned},</if>
+            <if test="bannedUntil != null">banned_until = #{bannedUntil},</if>
+            updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM member WHERE id = #{id}
+    </delete>
+
+    <update id="incrementNoShowCount" parameterType="java.lang.Long">
+        UPDATE member
+        SET no_show_count = no_show_count + 1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateBanStatus" parameterType="java.lang.Long">
+        UPDATE member
+        SET is_banned = #{banned},
+            banned_until = #{bannedUntil},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+</mapper>

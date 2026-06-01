@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.mapper.CourseMapper">
+
+    <resultMap id="BaseResultMap" type="com.gym.entity.Course">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="coach_id" property="coachId"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="capacity" property="capacity"/>
+        <result column="booked_count" property="bookedCount"/>
+        <result column="price" property="price"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, type, coach_id, start_time, end_time, capacity, booked_count, 
+        price, status, created_at, updated_at
+    </sql>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM course
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM course
+        ORDER BY start_time ASC
+    </select>
+
+    <select id="selectByCoachId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM course
+        WHERE coach_id = #{coachId}
+        ORDER BY start_time ASC
+    </select>
+
+    <select id="selectAvailableCourses" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM course
+        WHERE status = 1
+        AND booked_count &lt; capacity
+        AND start_time &gt; NOW()
+        ORDER BY start_time ASC
+    </select>
+
+    <select id="checkTimeConflict" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM course
+        WHERE coach_id = #{coachId}
+        AND status = 1
+        AND (
+            (start_time &lt;= #{startTime} AND end_time &gt; #{startTime})
+            OR (start_time &lt; #{endTime} AND end_time &gt;= #{endTime})
+            OR (start_time &gt;= #{startTime} AND end_time &lt;= #{endTime})
+        )
+    </select>
+
+    <insert id="insert" parameterType="com.gym.entity.Course" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO course (name, type, coach_id, start_time, end_time, capacity, booked_count, price, status)
+        VALUES (#{name}, #{type}, #{coachId}, #{startTime}, #{endTime}, #{capacity}, #{bookedCount}, #{price}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.gym.entity.Course">
+        UPDATE course
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="coachId != null">coach_id = #{coachId},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="bookedCount != null">booked_count = #{bookedCount},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="incrementBookedCount" parameterType="java.lang.Long">
+        UPDATE course
+        SET booked_count = booked_count + 1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <update id="decrementBookedCount" parameterType="java.lang.Long">
+        UPDATE course
+        SET booked_count = booked_count - 1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id} AND booked_count > 0
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM course WHERE id = #{id}
+    </delete>
+
+</mapper>

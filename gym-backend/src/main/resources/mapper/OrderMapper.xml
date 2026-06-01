@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.mapper.OrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.gym.entity.Order">
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="member_id" property="memberId"/>
+        <result column="course_id" property="courseId"/>
+        <result column="status" property="status"/>
+        <result column="amount" property="amount"/>
+        <result column="paid_amount" property="paidAmount"/>
+        <result column="check_in" property="checkIn"/>
+        <result column="check_in_time" property="checkInTime"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, order_no, member_id, course_id, status, amount, paid_amount, 
+        check_in, check_in_time, created_at, updated_at
+    </sql>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM orders
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByOrderNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM orders
+        WHERE order_no = #{orderNo}
+    </select>
+
+    <select id="selectByMemberId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM orders
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByCourseId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM orders
+        WHERE course_id = #{courseId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByMemberIdAndCourseId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM orders
+        WHERE member_id = #{memberId}
+        AND course_id = #{courseId}
+    </select>
+
+    <select id="checkTimeConflict" resultMap="BaseResultMap">
+        SELECT o.*
+        FROM orders o
+        JOIN course c ON o.course_id = c.id
+        WHERE o.member_id = #{memberId}
+        AND o.status IN (1, 2)
+        AND (
+            (c.start_time &lt;= #{startTime} AND c.end_time &gt; #{startTime})
+            OR (c.start_time &lt; #{endTime} AND c.end_time &gt;= #{endTime})
+            OR (c.start_time &gt;= #{startTime} AND c.end_time &lt;= #{endTime})
+        )
+    </select>
+
+    <insert id="insert" parameterType="com.gym.entity.Order" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders (order_no, member_id, course_id, status, amount, paid_amount, check_in)
+        VALUES (#{orderNo}, #{memberId}, #{courseId}, #{status}, #{amount}, #{paidAmount}, #{checkIn})
+    </insert>
+
+    <update id="update" parameterType="com.gym.entity.Order">
+        UPDATE orders
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="amount != null">amount = #{amount},</if>
+            <if test="paidAmount != null">paid_amount = #{paidAmount},</if>
+            <if test="checkIn != null">check_in = #{checkIn},</if>
+            <if test="checkInTime != null">check_in_time = #{checkInTime},</if>
+            updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus" parameterType="java.lang.Long">
+        UPDATE orders
+        SET status = #{status},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateCheckIn" parameterType="java.lang.Long">
+        UPDATE orders
+        SET check_in = 1,
+            check_in_time = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM orders WHERE id = #{id}
+    </delete>
+
+</mapper>

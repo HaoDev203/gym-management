@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.mapper.NotificationMapper">
+
+    <resultMap id="BaseResultMap" type="com.gym.entity.Notification">
+        <id column="id" property="id"/>
+        <result column="member_id" property="memberId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="type" property="type"/>
+        <result column="is_read" property="isRead"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, member_id, title, content, type, is_read, is_deleted, created_at
+    </sql>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM notification
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByMemberId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM notification
+        WHERE member_id = #{memberId}
+        AND is_deleted = 0
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectUnreadByMemberId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM notification
+        WHERE member_id = #{memberId}
+        AND is_read = 0
+        AND is_deleted = 0
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.gym.entity.Notification" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO notification (member_id, title, content, type, is_read, is_deleted)
+        VALUES (#{memberId}, #{title}, #{content}, #{type}, #{isRead}, 0)
+    </insert>
+
+    <update id="update" parameterType="com.gym.entity.Notification">
+        UPDATE notification
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="isRead != null">is_read = #{isRead},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="markAsRead" parameterType="java.lang.Long">
+        UPDATE notification
+        SET is_read = 1
+        WHERE id = #{id}
+    </update>
+
+    <update id="markAllAsRead" parameterType="java.lang.Long">
+        UPDATE notification
+        SET is_read = 1
+        WHERE member_id = #{memberId}
+        AND is_read = 0
+    </update>
+
+    <update id="softDelete" parameterType="java.lang.Long">
+        UPDATE notification
+        SET is_deleted = 1
+        WHERE id = #{id}
+        AND is_read = 1
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM notification WHERE id = #{id}
+    </delete>
+
+</mapper>
