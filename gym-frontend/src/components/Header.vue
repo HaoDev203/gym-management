@@ -13,7 +13,7 @@
         <el-dropdown @command="handleCommand" trigger="click">
           <div class="user-trigger">
             <el-avatar :size="32" :icon="User" class="user-avatar" />
-            <span class="username">{{ userStore.user?.username || '用户' }}</span>
+            <span class="username">{{ userStore.user?.name || userStore.user?.username || '用户' }}</span>
             <el-icon class="arrow-icon"><ArrowDown /></el-icon>
           </div>
           <template #dropdown>
@@ -23,8 +23,9 @@
                 <div class="card-name">{{ userStore.user?.name || '用户' }}</div>
                 <div class="card-username">@{{ userStore.user?.username }}</div>
                 <div class="card-role">
-                  <el-tag v-if="userStore.user?.isAdmin" type="warning" size="small" effect="plain">超级管理员</el-tag>
-                  <el-tag v-else type="primary" size="small" effect="plain">普通管理员</el-tag>
+                  <el-tag v-if="userStore.user?.role === 'ADMIN' && userStore.user?.isAdmin" type="warning" size="small" effect="plain">超级管理员</el-tag>
+                  <el-tag v-else-if="userStore.user?.role === 'ADMIN'" type="primary" size="small" effect="plain">普通管理员</el-tag>
+                  <el-tag v-else type="success" size="small" effect="plain">会员</el-tag>
                 </div>
               </div>
               <el-dropdown-item command="logout" divided>

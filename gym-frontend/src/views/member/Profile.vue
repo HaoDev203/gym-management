@@ -6,7 +6,7 @@
           <el-avatar :size="80" :icon="UserFilled" class="profile-avatar" />
         </div>
         <div class="profile-intro">
-          <h2 class="member-name">{{ profileForm.name || '健身达人' }}</h2>
+          <h2 class="member-name">{{ profileForm.name || profileForm.username || '健身达人' }}</h2>
           <p class="member-tagline">坚持运动，遇见更好的自己 💪</p>
           <div class="member-badges">
             <el-tag type="primary" effect="dark" round size="small">会员</el-tag>

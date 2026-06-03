@@ -1,18 +1,43 @@
 package com.gym.common;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 /**
  * 系统常量定义类。
  *
  * @author liuxinsi
  * @date 2026-05-20
  */
+@Component
 public final class Constants {
+
+    private static String jwtSecret;
+    private static long jwtExpiration;
 
     private Constants() {
     }
 
-    public static final String JWT_SECRET = "gym-management-system-secret-key-2026";
+    @Value("${jwt.secret}")
+    public void setJwtSecret(String secret) {
+        Constants.jwtSecret = secret;
+    }
 
+    @Value("${jwt.expiration}")
+    public void setJwtExpiration(long expiration) {
+        Constants.jwtExpiration = expiration;
+    }
+
+    public static String getJwtSecret() {
+        return jwtSecret != null ? jwtSecret : JWT_SECRET;
+    }
+
+    public static long getJwtExpiration() {
+        return jwtExpiration > 0 ? jwtExpiration : JWT_EXPIRATION;
+    }
+
+    // 兼容旧代码
+    public static final String JWT_SECRET = "gym-management-system-secret-key-2026";
     public static final long JWT_EXPIRATION = 86400000L;
 
     public static final int NO_SHOW_THRESHOLD = 3;

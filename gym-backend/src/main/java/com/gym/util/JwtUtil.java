@@ -17,8 +17,10 @@ import java.util.Date;
  */
 public final class JwtUtil {
 
-    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(
-            Constants.JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+    private static SecretKey getSecretKey() {
+        return Keys.hmacShaKeyFor(
+                Constants.getJwtSecret().getBytes(StandardCharsets.UTF_8));
+    }
 
     private JwtUtil() {
     }
@@ -32,14 +34,14 @@ public final class JwtUtil {
      */
     public static String generateToken(Long userId, String role) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + Constants.JWT_EXPIRATION);
+        Date expiration = new Date(now.getTime() + Constants.getJwtExpiration());
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiration)
-                .signWith(SECRET_KEY)
+                .signWith(getSecretKey())
                 .compact();
     }
 
@@ -51,7 +53,7 @@ public final class JwtUtil {
      */
     public static Claims parseToken(String token) {
         return Jwts.parser()
-                .verifyWith(SECRET_KEY)
+                .verifyWith(getSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
