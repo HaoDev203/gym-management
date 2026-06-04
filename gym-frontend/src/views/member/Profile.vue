@@ -49,12 +49,15 @@
         >
           <el-row :gutter="20">
             <el-col :span="12">
-              <el-form-item label="手机号">
-                <el-input v-model="profileForm.username" disabled>
+              <el-form-item label="登录账号">
+                <el-input :model-value="desensitizedUsername" disabled>
                   <template #prefix>
                     <el-icon><Phone /></el-icon>
                   </template>
                 </el-input>
+                <div style="margin-top: 4px;">
+                  <el-text type="info" size="small">登录账号为注册时的手机号，不可修改</el-text>
+                </div>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -99,8 +102,8 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="手机号">
-                <el-input v-model="profileForm.phone" placeholder="请输入手机号" prop="phone">
+              <el-form-item label="联系手机" prop="phone">
+                <el-input v-model="profileForm.phone" placeholder="请输入手机号">
                   <template #prefix>
                     <el-icon><Phone /></el-icon>
                   </template>
@@ -187,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   UserFilled, User, Phone, EditPen, Male, Female, Message,
@@ -198,6 +201,19 @@ import { getMemberBookings } from '@/api/booking'
 import { getMemberOrders } from '@/api/order'
 import { useUserStore } from '@/stores/user'
 import { setUser } from '@/utils/auth'
+
+// 手机号脱敏函数
+const desensitizePhone = (phone) => {
+  if (!phone || phone.length !== 11) {
+    return phone
+  }
+  return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
+}
+
+// 计算脱敏后的登录账号
+const desensitizedUsername = computed(() => {
+  return desensitizePhone(profileForm.username)
+})
 
 const userStore = useUserStore()
 const formRef = ref(null)

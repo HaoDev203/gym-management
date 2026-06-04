@@ -71,6 +71,7 @@ public class MemberServiceImpl implements MemberService {
             member.setEmergencyPhone(request.getEmergencyPhone());
         }
         if (request.getPhone() != null) {
+            // 只更新联系手机号，username 保持不变（登录账号）
             member.setPhone(request.getPhone());
         }
         if (request.getEmail() != null) {
