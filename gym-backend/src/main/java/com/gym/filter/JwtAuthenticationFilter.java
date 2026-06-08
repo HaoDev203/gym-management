@@ -42,22 +42,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
+            log.debug("从请求中获取 JWT: {}", jwt != null ? "存在" : "不存在");
             
             if (StringUtils.hasText(jwt)) {
                 Long userId = JwtUtil.getUserIdFromToken(jwt);
+                log.debug("从 JWT 解析出 userId: {}", userId);
                 
                 if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = userDetailsService.loadUserById(userId);
+                    log.debug("加载用户详情：{}", userDetails.getUsername());
                     
                     if (JwtUtil.validateToken(jwt)) {
-                        // 暂时禁用 Redis Token 验证，允许同时登录
-                        // if (!redisTokenStore.validateToken(userId, jwt)) {
-                        //     log.warn("Token 验证失败：账号 {} 已在其他地方登录", userId);
-                        //     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        //     response.setContentType("application/json;charset=UTF-8");
-                        //     response.getWriter().write("{\"code\":401,\"message\":\"该账号已在其他地方登录\"}");
-                        //     return;
-                        // }
+                        log.debug("JWT 验证成功");
                         
                         UsernamePasswordAuthenticationToken authentication = 
                             new UsernamePasswordAuthenticationToken(
@@ -71,12 +67,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         );
                         
                         SecurityContextHolder.getContext().setAuthentication(authentication);
-                        log.debug("已设置用户身份：userId={}", userId);
+                        log.debug("已设置用户身份：userId={}, authorities={}", userId, userDetails.getAuthorities());
+                    } else {
+                        log.error("JWT 验证失败");
                     }
                 }
             }
         } catch (Exception e) {
-            log.error("JWT 认证失败：{}", e.getMessage());
+            log.error("JWT 认证失败：{}", e.getMessage(), e);
         }
         
         filterChain.doFilter(request, response);

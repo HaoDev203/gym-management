@@ -124,21 +124,29 @@ const handleLogin = async () => {
         const token = res.data
         const adminId = getUserIdFromToken(token)
         
-        // 获取真实管理员信息（不再需要传 adminId）
+        // 先存储 token，这样后续请求才能携带认证信息
+        const userInfo = {
+          role: 'ADMIN',
+          id: adminId,
+          username: '',
+          name: '',
+          adminRole: 0,
+          isAdmin: false
+        }
+        userStore.login(token, userInfo)
+        
+        // 获取真实管理员信息
         const adminInfo = await getCurrentAdmin()
         const adminRole = adminInfo.data.role
         const isSuperAdmin = adminRole == 2
         
-        const userInfo = {
-          role: 'ADMIN',
-          id: adminId,
-          username: adminInfo.data.username,
-          name: adminInfo.data.name,
-          adminRole,
-          isAdmin: isSuperAdmin
-        }
+        // 更新用户信息
+        userInfo.username = adminInfo.data.username
+        userInfo.name = adminInfo.data.name
+        userInfo.adminRole = adminRole
+        userInfo.isAdmin = isSuperAdmin
+        userStore.user = { ...userInfo, id: adminId }
         
-        userStore.login(token, userInfo)
         ElMessage.success(`欢迎回来，${isSuperAdmin ? '超级管理员' : '管理员'} ${userInfo.name}`)
         router.replace('/admin/dashboard')
       } else {

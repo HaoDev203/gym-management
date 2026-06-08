@@ -2,9 +2,15 @@ package com.gym.util;
 
 import com.gym.common.BusinessException;
 import com.gym.common.ErrorCode;
+import com.gym.entity.Admin;
+import com.gym.entity.Member;
+import com.gym.mapper.AdminMapper;
+import com.gym.mapper.MemberMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 /**
  * 安全工具类。
@@ -14,7 +20,14 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @author liuxinsi
  * @date 2026-06-08
  */
+@Component
 public final class SecurityUtil {
+
+    @Autowired
+    private AdminMapper adminMapper;
+
+    @Autowired
+    private MemberMapper memberMapper;
 
     private SecurityUtil() {
     }
@@ -51,11 +64,27 @@ public final class SecurityUtil {
         UserDetails userDetails = getCurrentUserDetails();
         String username = userDetails.getUsername();
         
-        try {
-            return Long.valueOf(username);
-        } catch (NumberFormatException e) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户 ID 格式错误");
+        // 尝试从 Admin 表查询
+        Admin admin = getAdminMapper().selectByUsername(username);
+        if (admin != null) {
+            return admin.getId();
         }
+        
+        // 尝试从 Member 表查询
+        Member member = getMemberMapper().selectByUsername(username);
+        if (member != null) {
+            return member.getId();
+        }
+        
+        throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户不存在：" + username);
+    }
+
+    private static AdminMapper getAdminMapper() {
+        return SpringUtil.getBean(AdminMapper.class);
+    }
+
+    private static MemberMapper getMemberMapper() {
+        return SpringUtil.getBean(MemberMapper.class);
     }
 
     /**

@@ -22,6 +22,9 @@ const request = axios.create({
 request.interceptors.request.use(
   (config) => {
     const token = getToken()
+    const role = detectRoleFromUrl()
+    console.log('Request 拦截器 - role:', role, 'token:', token ? '存在' : '不存在', 'URL:', config.url)
+    
     if (token) {
       // 检查 token 是否已过期
       if (isTokenExpired(token)) {
@@ -31,6 +34,9 @@ request.interceptors.request.use(
       }
       
       config.headers.Authorization = `Bearer ${token}`
+      console.log('已设置 Authorization header')
+    } else {
+      console.warn('未找到 token，请求将不带认证信息')
     }
     return config
   },
