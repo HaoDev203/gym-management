@@ -2,6 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 import { getToken, removeToken } from './auth'
+import { isTokenExpired } from './jwt'
 
 function detectRoleFromUrl() {
   const hash = window.location.hash
@@ -22,6 +23,13 @@ request.interceptors.request.use(
   (config) => {
     const token = getToken()
     if (token) {
+      // 检查 token 是否已过期
+      if (isTokenExpired(token)) {
+        console.warn('Token 已过期，清除旧 token')
+        removeToken(detectRoleFromUrl())
+        return Promise.reject(new Error('Token expired'))
+      }
+      
       config.headers.Authorization = `Bearer ${token}`
     }
     return config
