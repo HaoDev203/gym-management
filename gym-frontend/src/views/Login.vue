@@ -58,7 +58,7 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login as memberLogin } from '@/api/auth'
-import { adminLogin } from '@/api/admin'
+import { adminLogin, getCurrentAdmin } from '@/api/admin'
 import { getMemberById } from '@/api/member'
 import { useUserStore } from '@/stores/user'
 import { getUserIdFromToken } from '@/utils/jwt'
@@ -122,13 +122,24 @@ const handleLogin = async () => {
       const res = await adminLogin(loginForm)
       if (res.code === 200) {
         const token = res.data
-        const userId = getUserIdFromToken(token)
-        userStore.login(token, {
+        const adminId = getUserIdFromToken(token)
+        
+        // 获取真实管理员信息
+        const adminInfo = await getCurrentAdmin(adminId)
+        const adminRole = adminInfo.data.role
+        const isSuperAdmin = adminRole == 2
+        
+        const userInfo = {
           role: 'ADMIN',
-          name: '管理员',
-          username: loginForm.username
-        })
-        ElMessage.success('登录成功')
+          id: adminId,
+          username: adminInfo.data.username,
+          name: adminInfo.data.name,
+          adminRole,
+          isAdmin: isSuperAdmin
+        }
+        
+        userStore.login(token, userInfo)
+        ElMessage.success(`欢迎回来，${isSuperAdmin ? '超级管理员' : '管理员'} ${userInfo.name}`)
         router.replace('/admin/dashboard')
       } else {
         ElMessage.error(res.message || '登录失败')

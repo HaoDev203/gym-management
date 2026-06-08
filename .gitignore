@@ -21,3 +21,15 @@ data/
 # 系统文件
 .DS_Store
 Thumbs.db
+
+# Trae Skills（本地使用，不上传）
+.trae/skills/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 敏感配置文件
+**/application-local.yml
+**/application-prod.yml
