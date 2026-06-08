@@ -124,8 +124,8 @@ const handleLogin = async () => {
         const token = res.data
         const adminId = getUserIdFromToken(token)
         
-        // 获取真实管理员信息
-        const adminInfo = await getCurrentAdmin(adminId)
+        // 获取真实管理员信息（不再需要传 adminId）
+        const adminInfo = await getCurrentAdmin()
         const adminRole = adminInfo.data.role
         const isSuperAdmin = adminRole == 2
         

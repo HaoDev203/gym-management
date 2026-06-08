@@ -150,9 +150,9 @@ export function adminLogin(data) {
 /**
  * 获取当前管理员信息
  */
-export function getCurrentAdmin(adminId) {
+export function getCurrentAdmin() {
   return request({
-    url: `/api/admin/info?adminId=${adminId}`,
+    url: '/api/admin/info',
     method: 'get'
   })
 }
