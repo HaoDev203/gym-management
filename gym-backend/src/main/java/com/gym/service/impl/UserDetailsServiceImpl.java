@@ -62,10 +62,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         Admin admin = adminMapper.selectById(userId);
         if (admin != null) {
-            log.info("管理员信息：userId={}, username={}, role={}, isSuperAdmin={}", 
-                userId, admin.getUsername(), admin.getRole(), admin.isSuperAdmin());
             String role = admin.isSuperAdmin() ? "ROLE_SUPER_ADMIN" : "ROLE_ADMIN";
-            log.info("设置角色为：{}", role);
             return new User(
                 admin.getUsername(),
                 admin.getPassword(),

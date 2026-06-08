@@ -6,7 +6,6 @@ import com.gym.common.ErrorCode;
 import com.gym.entity.Admin;
 import com.gym.service.AdminService;
 import com.gym.util.PermissionUtil;
-import com.gym.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +30,7 @@ public class AdminController {
      * @return 管理员信息
      */
     @GetMapping("/info")
-    public BaseResponse<Admin> getCurrentAdmin() {
-        Long adminId = SecurityUtil.getCurrentAdminId(); // 从 Token 中获取当前管理员 ID
+    public BaseResponse<Admin> getCurrentAdmin(@RequestParam Long adminId) {
         Admin admin = adminService.getAdminById(adminId);
         return BaseResponse.success(admin);
     }

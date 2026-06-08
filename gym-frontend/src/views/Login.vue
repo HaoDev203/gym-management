@@ -58,7 +58,7 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login as memberLogin } from '@/api/auth'
-import { adminLogin, getCurrentAdmin } from '@/api/admin'
+import { adminLogin } from '@/api/admin'
 import { getMemberById } from '@/api/member'
 import { useUserStore } from '@/stores/user'
 import { getUserIdFromToken } from '@/utils/jwt'
@@ -122,32 +122,13 @@ const handleLogin = async () => {
       const res = await adminLogin(loginForm)
       if (res.code === 200) {
         const token = res.data
-        const adminId = getUserIdFromToken(token)
-        
-        // 先存储 token，这样后续请求才能携带认证信息
-        const userInfo = {
+        const userId = getUserIdFromToken(token)
+        userStore.login(token, {
           role: 'ADMIN',
-          id: adminId,
-          username: '',
-          name: '',
-          adminRole: 0,
-          isAdmin: false
-        }
-        userStore.login(token, userInfo)
-        
-        // 获取真实管理员信息
-        const adminInfo = await getCurrentAdmin()
-        const adminRole = adminInfo.data.role
-        const isSuperAdmin = adminRole == 2
-        
-        // 更新用户信息
-        userInfo.username = adminInfo.data.username
-        userInfo.name = adminInfo.data.name
-        userInfo.adminRole = adminRole
-        userInfo.isAdmin = isSuperAdmin
-        userStore.user = { ...userInfo, id: adminId }
-        
-        ElMessage.success(`欢迎回来，${isSuperAdmin ? '超级管理员' : '管理员'} ${userInfo.name}`)
+          name: '管理员',
+          username: loginForm.username
+        })
+        ElMessage.success('登录成功')
         router.replace('/admin/dashboard')
       } else {
         ElMessage.error(res.message || '登录失败')
