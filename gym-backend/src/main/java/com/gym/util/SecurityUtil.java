@@ -84,8 +84,12 @@ public final class SecurityUtil {
     public static Long getCurrentAdminId() {
         UserDetails userDetails = getCurrentUserDetails();
         
-        if (!userDetails.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+        // 检查是否是管理员角色（包括普通管理员和超级管理员）
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") 
+                        || auth.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        
+        if (!isAdmin) {
             throw new BusinessException(ErrorCode.FORBIDDEN, "需要管理员权限");
         }
         
